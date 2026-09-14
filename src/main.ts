@@ -1,10 +1,16 @@
 import "./style.css";
+
 import { startCamera } from "./camera";
 
 import {
   createHandTracker,
   detectHands,
 } from "./handTracker";
+
+import {
+  clearCanvas,
+  drawHandSkeleton,
+} from "./renderer";
 
 document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
   <main class="stage">
@@ -16,18 +22,48 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
       muted
     ></video>
 
+    <canvas id="overlay"></canvas>
+
     <div class="hud">
       <h1>RASENGAN VISION</h1>
       <p id="status">Starting...</p>
     </div>
+
   </main>
 `;
 
 const webcam =
   document.querySelector<HTMLVideoElement>("#webcam")!;
 
+const canvas =
+  document.querySelector<HTMLCanvasElement>("#overlay")!;
+
+const context =
+  canvas.getContext("2d");
+
+if (!context) {
+  throw new Error(
+    "Could not create canvas context."
+  )
+}
+
 const statusText =
   document.querySelector<HTMLParagraphElement>("#status")!;
+
+const resizeCanvas= (): void => {
+  canvas.width =
+    canvas.clientWidth;
+
+  canvas.height =
+    canvas.clientHeight;
+};
+
+resizeCanvas();
+
+window.addEventListener(
+  "resize",
+  resizeCanvas
+);
 
 const initialize = async (): Promise<void> => {
 
@@ -58,6 +94,21 @@ const initialize = async (): Promise<void> => {
 
         const results =
           detectHands(handTracker, webcam);
+
+        clearCanvas(
+          context,
+          canvas
+        );
+
+        for (const hand of results.landmarks) {
+
+          drawHandSkeleton(
+            context,
+            hand,
+            webcam,
+            canvas
+          );
+        }
 
         const numberOfHands =
           results.landmarks.length;
