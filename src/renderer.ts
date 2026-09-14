@@ -44,7 +44,7 @@ type Point = {
     y: number;
 };
 
-const landmarkToCanvas = (
+export const landmarkToCanvas = (
     landmark: Landmark,
     video: HTMLVideoElement,
     canvas: HTMLCanvasElement

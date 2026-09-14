@@ -17,6 +17,11 @@ import {
   countExtendedFingers,
 } from "./gestures";
 
+import {
+  drawRasengan,
+  getPalmAnchor,
+} from "./rasengan";
+
 document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
   <main class="stage">
 
@@ -104,6 +109,10 @@ const initialize = async (): Promise<void> => {
           context,
           canvas
         );
+        
+        const currentTime = 
+          performance.now();
+
 
         for (const hand of results.landmarks) {
 
@@ -113,6 +122,25 @@ const initialize = async (): Promise<void> => {
             webcam,
             canvas
           );
+
+          if (isPalmOpen(hand)) {
+
+            const palm =
+              getPalmAnchor(
+                hand,
+                webcam,
+                canvas
+              );
+            
+            if (palm) {
+              drawRasengan(
+                context,
+                palm.center,
+                palm.radius,
+                currentTime
+              );
+            }
+          }
         }
 
         const numberOfHands =
