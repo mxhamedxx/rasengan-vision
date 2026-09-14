@@ -103,3 +103,11 @@ body {
 
   pointer-events: none;
 }
+
+#power-status {
+  margin-top: 4px;
+
+  font-size: 12px;
+
+  opacity: 0.65;
+}

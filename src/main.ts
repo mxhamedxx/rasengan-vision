@@ -22,6 +22,20 @@ import {
   getPalmAnchor,
 } from "./rasengan";
 
+import {
+  createRasenganState,
+  updateRasenganState,
+} from "./state";
+
+import type {
+  RasenganState,
+} from "./state";
+
+import type {
+  PalmAnchor,
+} from "./rasengan";
+
+
 document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
   <main class="stage">
 
@@ -35,8 +49,17 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
     <canvas id="overlay"></canvas>
 
     <div class="hud">
+
       <h1>RASENGAN VISION</h1>
-      <p id="status">Starting...</p>
+
+      <p id="status">
+        Starting...
+      </p>
+
+      <p id="power-status">
+        Left: IDLE | Right: IDLE
+      </p>
+
     </div>
 
   </main>
@@ -60,6 +83,11 @@ if (!context) {
 const statusText =
   document.querySelector<HTMLParagraphElement>("#status")!;
 
+const powerStatusText =
+  document.querySelector<HTMLParagraphElement>(
+    "#power-status"
+  )!;
+
 const resizeCanvas= (): void => {
   canvas.width =
     canvas.clientWidth;
@@ -74,6 +102,29 @@ window.addEventListener(
   "resize",
   resizeCanvas
 );
+
+type HandId =
+  | "Left"
+  | "Right";
+
+const HAND_IDS: HandId[] = [
+  "Left",
+  "Right",
+];
+
+const rasenganStates:
+  Record<HandId, RasenganState> = {
+
+    Left:
+      createRasenganState(),
+
+    Right:
+      createRasenganState(),
+
+  };
+
+const lastPalmAnchors:
+  Partial<Record<HandId, PalmAnchor>> = {};
 
 const initialize = async (): Promise<void> => {
 
@@ -113,34 +164,135 @@ const initialize = async (): Promise<void> => {
         const currentTime = 
           performance.now();
 
+        /*
+          Assume neither hand is open.
+          If we detect one below we will change its value to true
+        */
+        const palmOpenThisFrame:
+          Record<HandId, boolean> = {
 
-        for (const hand of results.landmarks) {
+            Left: false,
+            Right: false,
 
-          drawHandSkeleton(
-            context,
-            hand,
-            webcam,
-            canvas
-          );
+          };
 
-          if (isPalmOpen(hand)) {
+        /* Process Detected Hands */
+        results.landmarks.forEach(
+          (hand, index) => {
 
+            drawHandSkeleton(
+              context,
+              hand,
+              webcam,
+              canvas
+            );
+
+            const handedness =
+              results.handedness[index]?.[0]
+                ?.categoryName;
+
+            /*
+              MediaPipe returns either "Left" or "Right"
+            */
+            if (
+              handedness !== "Left" &&
+              handedness !== "Right"
+            ) {
+              return;
+            }
+
+            const handId: HandId =
+              handedness;
+
+            const palmOpen =
+              isPalmOpen(hand);
+            
+            palmOpenThisFrame[handId] =
+              palmOpen;
+
+            /*
+              Remember the most recent position of this palm
+            */
             const palm =
               getPalmAnchor(
                 hand,
                 webcam,
                 canvas
               );
-            
+
             if (palm) {
-              drawRasengan(
-                context,
-                palm.center,
-                palm.radius,
-                currentTime
-              );
+              lastPalmAnchors[handId] =
+                palm;
             }
           }
+        );
+
+        for (const handId of HAND_IDS) {
+
+          rasenganStates[handId] =
+            updateRasenganState(
+              rasenganStates[handId],
+              palmOpenThisFrame[handId],
+              currentTime
+            );
+          
+          const state =
+            rasenganStates[handId];
+
+          const palm =
+            lastPalmAnchors[handId];
+
+          /* No point drawing if we have never seen this hand before */
+
+          if (!palm) {
+            continue;
+          }
+
+          /* Idle = nothing to draw */
+          if (
+            state.phase === "IDLE" ||
+            state.charge <= 0
+          ) {
+            continue;
+          }
+          
+          /*
+            Ease-out curve. Makes the orb grow quickly at the start
+            then slow down near full size.
+          */
+          const easedCharge =
+            1 -
+            Math.pow(
+              1 - state.charge,
+              3
+            );
+
+          const sizeScale =
+            0.2 +
+            easedCharge * 0.8;
+          
+          drawRasengan(
+            context,
+            palm.center,
+            palm.radius * 
+              sizeScale,
+            currentTime,
+            state.charge
+          );
+
+          const left =
+          rasenganStates.Left;
+
+          const right =
+            rasenganStates.Right;
+
+          powerStatusText.textContent =
+            `Left: ${left.phase} ${Math.round(
+              left.charge * 100
+            )}% | ` +
+            `Right: ${right.phase} ${Math.round(
+              right.charge * 100
+            )}%`;
         }
 
         const numberOfHands =

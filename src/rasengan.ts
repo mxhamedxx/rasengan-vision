@@ -124,13 +124,28 @@ export const drawRasengan = (
     context: CanvasRenderingContext2D,
     center: Point,
     radius: number,
-    time: number
+    time: number,
+    strength: number = 1
 ): void => {
 
     const t =
         time / 1000;
+    
+    const power = 
+        Math.max(
+            0,
+            Math.min(1, strength)
+        );
+    
+    if (power <= 0) {
+        return;
+    }
 
     context.save();
+
+    context.globalAlpha =
+        0.15 +
+        power * 0.85;
 
     /*
         "lighter" makes overlapping bright shapes add thier light together.
@@ -299,7 +314,12 @@ export const drawRasengan = (
     /* Orbitting Particles */
 
     const particleCount =
-        24;
+        Math.max(
+            4,
+            Math.round(
+                24 * power
+            )
+        );
 
     for (
         let i = 0;
