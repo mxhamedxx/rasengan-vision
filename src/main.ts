@@ -1,6 +1,11 @@
 import "./style.css";
 import { startCamera } from "./camera";
 
+import {
+  createHandTracker,
+  detectHands,
+} from "./handTracker";
+
 document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
   <main class="stage">
 
@@ -21,25 +26,93 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
 const webcam =
   document.querySelector<HTMLVideoElement>("#webcam")!;
 
-const status =
+const statusText =
   document.querySelector<HTMLParagraphElement>("#status")!;
 
 const initialize = async (): Promise<void> => {
 
   try {
 
-    status.textContent = "Requesting camera permission...";
-
+    /* Starting webcam */
+    statusText.textContent = "Requesting camera permission...";
     await startCamera(webcam);
+    statusText.textContent = "camera ready ✅";
 
-    status.textContent = "camera ready ✅";
+    /* Loading MediaPipe */
+    statusText.textContent = "Loading hand tracker...";
+    const handTracker = await createHandTracker()
+    statusText.textContent = "Hand tracker ready 🟢"
+
+    let lastVideoTime = -1;
+    let hasLoggedLandmarks = false;
+
+    /* Detection Loop */
+    const detectLoop = (): void => {
+
+      if (
+        webcam.readyState >= 2 &&
+        webcam.currentTime !== lastVideoTime
+      ) {
+
+        lastVideoTime = webcam.currentTime;
+
+        const results =
+          detectHands(handTracker, webcam);
+
+        const numberOfHands =
+          results.landmarks.length;
+
+        // if no hands showing
+        if (numberOfHands === 0) {
+          statusText.textContent =
+            "show me your hand lil bro";
+
+          hasLoggedLandmarks = false;
+        }
+        // hand detected
+        else {
+          const handNames =
+            results.handedness.map(
+              (hand) =>
+                hand[0]?.categoryName ?? "Hand"
+            );
+
+            statusText.textContent =
+              `${numberOfHands} hand${
+                numberOfHands > 1 ? "s" : ""
+              } detected: ${handNames.join(", ")}`;
+
+          // Print landmarks once when a hand appears
+          if (!hasLoggedLandmarks) {
+
+            console.log(
+              "Hand landmarks:",
+              results.landmarks
+            );
+
+            console.log(
+              "Handedness:",
+              results.handedness
+            );
+
+            hasLoggedLandmarks = true;
+          }
+
+
+        }
+
+      }
+      requestAnimationFrame(detectLoop);
+    };
+
+    detectLoop();
 
   } catch(error) {
 
     console.error(error);
 
-    status.textContent =
-      "Camera unavailable. Check browser permissions."
+    statusText.textContent =
+      "Something went wrong. Check the console.";
   }
 
 };
