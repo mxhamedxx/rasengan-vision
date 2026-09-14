@@ -12,6 +12,11 @@ import {
   drawHandSkeleton,
 } from "./renderer";
 
+import {
+  isPalmOpen,
+  countExtendedFingers,
+} from "./gestures";
+
 document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
   <main class="stage">
 
@@ -128,10 +133,27 @@ const initialize = async (): Promise<void> => {
                 hand[0]?.categoryName ?? "Hand"
             );
 
+          const gestureDescriptions =
+            results.landmarks.map(
+              (hand, index) => {
+
+                const handName =
+                  handNames[index] ?? "Hand";
+
+                const fingerCount =
+                  countExtendedFingers(hand);
+
+                const palmOpen =
+                  isPalmOpen(hand);
+
+                return palmOpen
+                  ? `${handName}: OPEN PALM ✋`
+                  : `${handName}: ${fingerCount}/4 fingers`;
+              }
+            );
+
             statusText.textContent =
-              `${numberOfHands} hand${
-                numberOfHands > 1 ? "s" : ""
-              } detected: ${handNames.join(", ")}`;
+              gestureDescriptions.join(" | ");
 
           // Print landmarks once when a hand appears
           if (!hasLoggedLandmarks) {
