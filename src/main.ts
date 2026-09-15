@@ -61,11 +61,11 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
         id="skeleton-toggle"
         type="button"
       >
-        Skeleton: ON
+        Skeleton: OFF
       </button>
       </div>
 
-      <p id="power-status">
+      <p id="power-status" class="debug-info">
         Left: IDLE 0% | Right: IDLE 0%
       </p>
 
@@ -85,7 +85,7 @@ const skeletonToggle =
     "#skeleton-toggle"
   )!;
 
-let showSkeleton = true;
+let showSkeleton = false;
 
 skeletonToggle.addEventListener(
   "click",

@@ -4,6 +4,17 @@ A real-time browser-based hand tracking experience that generates an animated en
 
 Built with TypeScript, MediaPipe, the Canvas API and Vite.
 
+![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue)
+![MediaPipe](https://img.shields.io/badge/MediaPipe-Hand%20Tracking-orange)
+![Vitest](https://img.shields.io/badge/Tests-Vitest-green)
+![GitHub Pages](https://img.shields.io/badge/Deployment-GitHub%20Pages-blue)
+
+## Demo
+
+![Rasengan Vision Demo](docs/demo.png)
+
+[🌐 Live Demo](https://mxhamedxx.github.io/rasengan-vision/)
+
 ## Overview
 
 Rasengan Vision uses the user's webcam to detect hand landmarks in real time. Hand landmark data is processed using custom gesture-recognition logic to determine whether the user's palm is open.
@@ -199,6 +210,5 @@ was built from scratch using TypeScript.
 ## Author
 
 **Mohamed Elsayed Ahmed**
-v1
 
 Computer Science student at Monash University.

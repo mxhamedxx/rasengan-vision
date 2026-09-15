@@ -153,3 +153,9 @@ body {
     rgba(56, 189, 248, 0.28);
 }
 
+.debug-info {
+  font-family: monospace;
+  font-size: 11px;
+  opacity: 0.55;
+}
+
