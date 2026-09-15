@@ -20,6 +20,7 @@ import {
 import {
   drawRasengan,
   getPalmAnchor,
+  smoothPalmAnchor,
 } from "./rasengan";
 
 import {
@@ -50,14 +51,22 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
 
     <div class="hud">
 
-      <h1>RASENGAN VISION</h1>
+    <div class="title-row">
+      <div>
+        <h1>RASENGAN VISION</h1>
+        <p id="status">Starting...</p>
+      </div>
 
-      <p id="status">
-        Starting...
-      </p>
+      <button
+        id="skeleton-toggle"
+        type="button"
+      >
+        Skeleton: ON
+      </button>
+      </div>
 
       <p id="power-status">
-        Left: IDLE | Right: IDLE
+        Left: IDLE 0% | Right: IDLE 0%
       </p>
 
     </div>
@@ -70,6 +79,50 @@ const webcam =
 
 const canvas =
   document.querySelector<HTMLCanvasElement>("#overlay")!;
+
+const skeletonToggle =
+  document.querySelector<HTMLButtonElement>(
+    "#skeleton-toggle"
+  )!;
+
+let showSkeleton = true;
+
+skeletonToggle.addEventListener(
+  "click",
+  () => {
+
+    showSkeleton =
+      !showSkeleton;
+
+    skeletonToggle.textContent =
+      `Skeleton: ${
+        showSkeleton
+          ? "ON"
+          : "OFF"
+      }`;
+  }
+)
+
+window.addEventListener(
+  "keydown",
+  (event) => {
+
+    if (
+      event.key.toLowerCase() === "s"
+    ) {
+
+      showSkeleton =
+        !showSkeleton;
+
+      skeletonToggle.textContent =
+        `Skeleton: ${
+          showSkeleton
+            ? "ON"
+            : "OFF"
+        }`;
+    }
+  }
+);
 
 const context =
   canvas.getContext("2d");
@@ -180,12 +233,14 @@ const initialize = async (): Promise<void> => {
         results.landmarks.forEach(
           (hand, index) => {
 
-            drawHandSkeleton(
-              context,
-              hand,
-              webcam,
-              canvas
-            );
+            if (showSkeleton) {
+              drawHandSkeleton(
+                context,
+                hand,
+                webcam,
+                canvas
+              );
+            }
 
             const handedness =
               results.handedness[index]?.[0]
@@ -222,7 +277,10 @@ const initialize = async (): Promise<void> => {
 
             if (palm) {
               lastPalmAnchors[handId] =
-                palm;
+                smoothPalmAnchor(
+                  lastPalmAnchors[handId],
+                  palm
+                );
             }
           }
         );
@@ -253,6 +311,7 @@ const initialize = async (): Promise<void> => {
             state.phase === "IDLE" ||
             state.charge <= 0
           ) {
+            delete lastPalmAnchors[handId];
             continue;
           }
           

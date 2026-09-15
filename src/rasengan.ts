@@ -17,6 +17,49 @@ export type PalmAnchor = {
   radius: number;
 };
 
+export const smoothPalmAnchor = (
+    previous: PalmAnchor | undefined,
+    current: PalmAnchor,
+    smoothing: number = 0.22
+): PalmAnchor => {
+
+    if (!previous) {
+        return current;
+    }
+
+    const lerp = (
+        start: number,
+        end: number,
+        amount: number
+    ): number => {
+
+        return start +
+            (end - start) * amount;
+    };
+
+    return {
+        center: {
+            x: lerp(
+                previous.center.x,
+                current.center.x,
+                smoothing
+            ),
+
+            y: lerp(
+                previous.center.y,
+                current.center.y,
+                smoothing
+            ),
+        },
+
+        radius: lerp(
+            previous.radius,
+            current.radius,
+            smoothing
+        ),
+    };
+};
+
 const distance = (
     a: Point,
     b: Point

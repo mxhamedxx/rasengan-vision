@@ -52,7 +52,7 @@ body {
 
 .hud {
   position: absolute;
-  
+
   z-index: 2;
 
   top: 24px;
@@ -60,35 +60,48 @@ body {
 
   transform: translateX(-50%);
 
-  padding: 12px 22px;
+  min-width: 390px;
 
-  text-align: center;
+  padding: 14px 18px;
 
   color: white;
 
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(5, 10, 20, 0.58);
 
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border:
+    1px solid
+    rgba(125, 211, 252, 0.2);
 
-  border-radius: 12px;
+  border-radius: 16px;
 
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(12px);
+}
+
+.title-row {
+  display: flex;
+
+  align-items: center;
+
+  justify-content:
+    space-between;
+
+  gap: 24px;
 }
 
 .hud h1 {
   margin: 0;
 
-  font-size: 20px;
+  font-size: 18px;
 
-  letter-spacing: 4px;
+  letter-spacing: 3px;
 }
 
 .hud p {
-  margin: 6px 0 0;
+  margin: 5px 0 0;
 
-  font-size: 14px;
+  font-size: 13px;
 
-  opacity: 0.8;
+  opacity: 0.75;
 }
 
 #overlay {
@@ -105,9 +118,38 @@ body {
 }
 
 #power-status {
-  margin-top: 4px;
+  margin-top: 10px;
+
+  padding-top: 9px;
+
+  border-top:
+    1px solid
+    rgba(255, 255, 255, 0.1);
 
   font-size: 12px;
-
-  opacity: 0.65;
 }
+
+#skeleton-toggle {
+  padding: 7px 10px;
+
+  color: white;
+
+  background:
+    rgba(56, 189, 248, 0.15);
+
+  border:
+    1px solid
+    rgba(125, 211, 252, 0.35);
+
+  border-radius: 8px;
+
+  cursor: pointer;
+
+  white-space: nowrap;
+}
+
+#skeleton-toggle:hover {
+  background:
+    rgba(56, 189, 248, 0.28);
+}
+
